@@ -2,6 +2,8 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms.Integration;
+using System.Windows.Input;
 
 namespace NavisCustomRibbon
 {
@@ -10,6 +12,7 @@ namespace NavisCustomRibbon
     /// </summary>
     public partial class UserControl1 : UserControl
     {
+        
         private Model ViewPointsModel { get; set; }
         public UserControl1()
         {
@@ -17,7 +20,8 @@ namespace NavisCustomRibbon
             ViewPointsModel = new Model();
         }
 
-        
+
+
 
         private void BtnGetSignal_Click(object sender, System.Windows.RoutedEventArgs e)
         {
@@ -75,7 +79,20 @@ namespace NavisCustomRibbon
         {
             try
             {
-                if (tboxSpeed != null && tbox_Interval != null)
+                if (tboxSpeed != null && tbox_Interval != null && tbox_TotalLength != null)
+                {
+                    double distance = double.Parse(tboxSpeed.Text) * 1000 * double.Parse(tbox_Interval.Text) / 3600;
+                    tbox_TotalLength.Text = $"Total distance: {String.Format("{0:0.##}", distance)}m";
+                }
+            }
+            catch { }
+        }
+
+        private void tbox_Interval_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                if (tboxSpeed != null && tbox_Interval != null && tbox_TotalLength != null)
                 {
                     double distance = double.Parse(tboxSpeed.Text) * 1000 * double.Parse(tbox_Interval.Text) / 3600;
                     tbox_TotalLength.Text = $"Total distance: {String.Format("{0:0.##}", distance)}m";
@@ -84,4 +101,5 @@ namespace NavisCustomRibbon
             catch { }
         }
     }
+
 }

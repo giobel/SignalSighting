@@ -51,7 +51,7 @@ namespace NavisCustomRibbon
             }
 
             return $"Signal {signalMark} selected\n" +
-                $"Centroid XYZ: " +
+                $"Centre: " +
                 $"{Math.Round(signalBB3dcenter.X,3)}," +
                 $"{Math.Round(signalBB3dcenter.Y,3)}," +
                 $"{Math.Round(signalBB3dcenter.Z,3)}";

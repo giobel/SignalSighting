@@ -65,7 +65,7 @@ namespace NavisCustomRibbon
 namespace NavisDockPanel
 {
     [Plugin("SignalSightDockPanel", "LOR", DisplayName = "SignalSightDockPanel")]
-    [DockPanePlugin(200,350,AutoScroll = true, MinimumWidth = 200)]
+    [DockPanePlugin(160,350,AutoScroll = true, MinimumWidth = 160, FixedSize = false)]
     public class SignalSightDockPanel : DockPanePlugin
     {
         public override Control CreateControlPane()
@@ -76,7 +76,6 @@ namespace NavisDockPanel
             ElementHost eh = new ElementHost();        
             eh.Dock = DockStyle.Fill;
             eh.AutoSize = true;
-            
 
             //assign the control
             eh.Child = new UserControl1();
