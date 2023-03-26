@@ -1,0 +1,35 @@
+﻿<UserControl x:Class="NavisCustomRibbon.UserControl1"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NavisCustomRibbon"
+             mc:Ignorable="d" 
+             Height="350" Width="200">
+    <Grid>
+        <Label Canvas.Left="18" Canvas.Top="0" Height="25" x:Name="label1" VerticalAlignment="Top" Content="Signal Viewpoints" HorizontalAlignment="Center"/>
+
+        <Label Height="25" x:Name="label_Spped" VerticalAlignment="Top" Content="Speed [km/h]" Margin="0,25,85,0" Foreground="Black" HorizontalAlignment="Left"/>
+        <TextBox x:Name="tboxSpeed" HorizontalAlignment="Left" Margin="114,30,0,0" TextWrapping="Wrap" Text="80" VerticalAlignment="Top" Width="47" TextAlignment="Center"/>
+
+        <Label Height="25" x:Name="label_Interval" VerticalAlignment="Top" Content="Interval [s]" Margin="0,50,102,0" Foreground="Black"/>
+        <TextBox x:Name="tbox_Interval" HorizontalAlignment="Left" Margin="114,55,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="47" TextAlignment="Center"/>
+
+        <Label Height="25" x:Name="label_driverH" VerticalAlignment="Top" Content="Driver Height [m]" Margin="0,78,65,0" Foreground="Black"/>
+        <TextBox x:Name="tbox_DriverH" HorizontalAlignment="Left" Margin="114,83,0,0" TextWrapping="Wrap" Text="2.7" VerticalAlignment="Top" Width="47" TextAlignment="Center"/>
+
+
+
+        <Button Content="Get Signal" VerticalAlignment="Top" Click="BtnGetSignal_Click" Margin="0,167,0,0" Height="25"/>
+
+        <Button Content="Get Alignment" Margin="0,235,0,0" VerticalAlignment="Top" Click="BtnGetAlignment_Click" Height="25"/>
+        <TextBlock x:Name="labelSignal" Text="Nothing selected" Margin="0,197,0,120" TextWrapping="WrapWithOverflow"/>
+
+        <Label x:Name="labelTrack" Height="25" Content="Nothing selected" Margin="0,235,0,40"/>
+
+        <Button x:Name="BtnRun" Height="25" Content="Run" Margin="0,315,0,10" Click="ButtonRun_Click"/>
+        <CheckBox x:Name="cboxUpDirection" Content="UP Track Direction" HorizontalAlignment="Left" Margin="5,113,0,0" VerticalAlignment="Top" Width="156" IsChecked="True"/>
+        <CheckBox x:Name="cboxRhinoOutput" Content="Create Rhino model" HorizontalAlignment="Left" Margin="5,133,0,0" VerticalAlignment="Top" Width="156" IsChecked="True" Click="CheckBox_RhinoOutput"/>
+
+    </Grid>
+</UserControl>
