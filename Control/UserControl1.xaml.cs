@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rhino.Geometry;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -10,12 +11,13 @@ namespace NavisCustomRibbon
     public partial class UserControl1 : UserControl
     {
         private Model ViewPointsModel { get; set; }
-
         public UserControl1()
         {
             InitializeComponent();
             ViewPointsModel = new Model();
         }
+
+        
 
         private void BtnGetSignal_Click(object sender, System.Windows.RoutedEventArgs e)
         {
@@ -27,13 +29,14 @@ namespace NavisCustomRibbon
             {
                 MessageBox.Show(ex.Message);
             }
+            CleanRunLabel();
         }
 
         private void BtnGetAlignment_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             try
             {
-                this.labelTrack.Content = ViewPointsModel.GetTrack();
+                this.labelTrack.Text = ViewPointsModel.GetTrack();
             }
             catch (Exception ex)
             {
@@ -47,12 +50,38 @@ namespace NavisCustomRibbon
             double interval = double.Parse(tbox_Interval.Text);
             double driverHeight = double.Parse(tbox_DriverH.Text);
 
-            ViewPointsModel.Run(speed, interval, driverHeight, cboxUpDirection.IsChecked.Value);
+            ViewPointsModel.Run(speed, interval, driverHeight, cboxUpDirection.IsChecked.Value, cboxRhinoOutput.IsChecked.Value);
+            CleanRunLabel();
         }
 
-        private void CheckBox_RhinoOutput(object sender, RoutedEventArgs e)
-        {
 
+        private void CleanRunLabel()
+        {
+            labelGenerateVpoints.Text = "";
+        }
+
+        private void cboxUpDirectionClick(object sender, RoutedEventArgs e)
+        {
+            CleanRunLabel();
+        }
+
+        private void cboxRhinoOutputClick(object sender, RoutedEventArgs e)
+        {
+            CleanRunLabel();
+        }
+
+
+        private void tboxSpeedChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                if (tboxSpeed != null && tbox_Interval != null)
+                {
+                    double distance = double.Parse(tboxSpeed.Text) * 1000 * double.Parse(tbox_Interval.Text) / 3600;
+                    tbox_TotalLength.Text = $"Total distance: {String.Format("{0:0.##}", distance)}m";
+                }
+            }
+            catch { }
         }
     }
 }

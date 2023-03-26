@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using Rhino.Geometry;
 using System.Windows;
+using Autodesk.Navisworks.Api.Interop.ComApi;
+using Autodesk.Navisworks.Api.DocumentParts;
+using System.Linq;
 
 namespace NavisCustomRibbon
 {
@@ -19,7 +22,7 @@ namespace NavisCustomRibbon
         private List<Point3d> ViewpointsPts { get; set; } //points on alignment
         private List<Point3d> DriverPts { get; set; } //points on alignmnet at driver height
         private List<string> SphereNames { get; set; }
-
+        private string signalMark { get; set; }
 
         public string GetSignal()
         {
@@ -29,8 +32,25 @@ namespace NavisCustomRibbon
             storedSelection.CopyFrom(doc.CurrentSelection.ToSelection());
 
             signalBB3dcenter = storedSelection.ExplicitSelection[0].BoundingBox().Center;
+            PropertyCategoryCollection signalProperties = storedSelection.ExplicitSelection[0].PropertyCategories;
 
-            return $"Element selected\n" +
+            foreach (var property in signalProperties)
+            {
+                if (property.DisplayName == "Identity Data")
+                {
+                    try
+                    {
+                        DataProperty dp = property.Properties.Where(x => x.DisplayName == "Mark").First();
+                        signalMark = dp.Value.ToDisplayString();
+                    }
+                    catch
+                    {
+                        signalMark = "N/A";
+                    }
+                }
+            }
+
+            return $"Signal {signalMark} selected\n" +
                 $"Centroid XYZ: " +
                 $"{Math.Round(signalBB3dcenter.X,3)}," +
                 $"{Math.Round(signalBB3dcenter.Y,3)}," +
@@ -76,7 +96,7 @@ namespace NavisCustomRibbon
             return $"{alignmentPoints.Count} points";
         }
 
-        public string Run(double speed, double interval, double driverHeight, bool isUpDirection)
+        public string Run(double speed, double interval, double driverHeight, bool isUpDirection, bool createRhinoModel)
         {
             try
             {
@@ -115,7 +135,7 @@ namespace NavisCustomRibbon
                 for (int i = 0; i < interval; i++)
                 {
                     currentDistance += totalLength / interval;
-                    distances.Add(Math.Round(currentDistance, 0));
+                    distances.Add(currentDistance);
                 }
 
                 Point3d previousViewpoint = closestPt + new Point3d(0, 0, driverHeight);
@@ -156,16 +176,56 @@ namespace NavisCustomRibbon
                     previousViewpoint = driverPoint;
                 }
 
+                if (signalMark == null)
+                {
+                    signalMark = "Missing Signal Mark";
+                }
+
+                FolderItem fi = new FolderItem();
+                
+                fi.DisplayName = signalMark;
+                
+                
+                doc.SavedViewpoints.AddCopy(fi);
+
+
+                DocumentSavedViewpoints oSavePts = doc.SavedViewpoints;
+
+                GroupItem oFolder = null;
+
+                foreach (SavedItem oEachItem in oSavePts.Value)
+                {
+                    if (oEachItem.DisplayName == signalMark)
+                    {
+                        oFolder = oEachItem as GroupItem;
+
+                        break;
+                    }
+                }
+
+
+
                 for (int i = allViewpoints.Count; i > 0; i--)
                 {
-                    string name = distances[i - 1].ToString().PadLeft(3, '0');
+                    double name = distances[i - 1];
+                    
                     SavedViewpoint savedViewpoint = new SavedViewpoint(allViewpoints[i - 1]);
-                    savedViewpoint.DisplayName = name;
+                    string simplifiedName = String.Format("{0:0.##}", name);
+                    savedViewpoint.DisplayName = simplifiedName;
                     doc.SavedViewpoints.AddCopy(savedViewpoint);
+
+                    oSavePts.Move(oSavePts.RootItem, oSavePts.Value.Count - 1, oFolder, oFolder.Children.Count);
 
                 }
 
-                //SavedViewpointAnimation sva = new SavedViewpointAnimation(allViewpoints[0]);
+
+                
+
+                if (createRhinoModel)
+                {
+                    CreateRhinoModel();
+                }
+
             }
             catch(Exception ex)
             {
@@ -175,56 +235,56 @@ namespace NavisCustomRibbon
             return "Completed";
         }
 
-        //public string CreateRhinoModel()
-        //{
-        //    Rhino.Geometry.Line line = new Rhino.Geometry.Line(signalCentroid, closestPt);
+        public string CreateRhinoModel()
+        {
+            Rhino.Geometry.Line line = new Rhino.Geometry.Line(signalCentroid, closestPt);
 
-        //    var model = new Rhino.FileIO.File3dm();
+            var model = new Rhino.FileIO.File3dm();
 
-        //    model.Settings.ModelUnitSystem = Rhino.UnitSystem.Meters;
+            model.Settings.ModelUnitSystem = Rhino.UnitSystem.Meters;
 
-        //    Rhino.DocObjects.ObjectAttributes alignCurveAttr = new Rhino.DocObjects.ObjectAttributes() { Name = "Alignment Curve" };
-        //    Rhino.DocObjects.ObjectAttributes firstCurveAttr = new Rhino.DocObjects.ObjectAttributes()
-        //    {
-        //        Name = "First Curve",
-        //        ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject,
-        //        ObjectColor = System.Drawing.Color.Purple
-        //    };
-        //    Rhino.DocObjects.ObjectAttributes secondCurveAttr = new Rhino.DocObjects.ObjectAttributes()
-        //    {
-        //        Name = "Second Curve",
-        //        ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject,
-        //        ObjectColor = System.Drawing.Color.Aqua
-        //    };
+            Rhino.DocObjects.ObjectAttributes alignCurveAttr = new Rhino.DocObjects.ObjectAttributes() { Name = "Alignment Curve" };
+            Rhino.DocObjects.ObjectAttributes firstCurveAttr = new Rhino.DocObjects.ObjectAttributes()
+            {
+                Name = "First Curve",
+                ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject,
+                ObjectColor = System.Drawing.Color.Purple
+            };
+            Rhino.DocObjects.ObjectAttributes secondCurveAttr = new Rhino.DocObjects.ObjectAttributes()
+            {
+                Name = "Second Curve",
+                ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject,
+                ObjectColor = System.Drawing.Color.Aqua
+            };
 
-        //    model.Objects.AddPoint(signalCentroid);
-        //    model.Objects.AddPoint(closestPt);
-        //    model.Objects.AddLine(line);
-        //    model.Objects.AddCurve(plcurve[0], firstCurveAttr);
-        //    model.Objects.AddCurve(plcurve[1], secondCurveAttr);
+            model.Objects.AddPoint(signalCentroid);
+            model.Objects.AddPoint(closestPt);
+            model.Objects.AddLine(line);
+            model.Objects.AddCurve(plcurve[0], firstCurveAttr);
+            model.Objects.AddCurve(plcurve[1], secondCurveAttr);
 
-        //    for (int i = 0; i < ViewpointsPts.Count; i++)
-        //    {
-        //        model.Objects.AddLine(ViewpointsPts[i], DriverPts[i]);
+            for (int i = 0; i < ViewpointsPts.Count; i++)
+            {
+                model.Objects.AddLine(ViewpointsPts[i], DriverPts[i]);
 
-        //        Rhino.DocObjects.ObjectAttributes sphereAttr = new Rhino.DocObjects.ObjectAttributes()
-        //        {
-        //            Name = $"{SphereNames[i]}",
-        //            ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject,
-        //            ObjectColor = System.Drawing.Color.Coral
-        //        };
+                Rhino.DocObjects.ObjectAttributes sphereAttr = new Rhino.DocObjects.ObjectAttributes()
+                {
+                    Name = $"{SphereNames[i]}",
+                    ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject,
+                    ObjectColor = System.Drawing.Color.Coral
+                };
 
-        //        model.Objects.AddSphere(new Sphere(ViewpointsPts[i], 0.5), sphereAttr);
-        //    }
+                model.Objects.AddSphere(new Sphere(ViewpointsPts[i], 0.5), sphereAttr);
+            }
 
-        //    string rhinoPath = (@"C:\temp\navisRhino2.3dm");
+            string rhinoPath = (@"C:\temp\navisRhino2.3dm");
 
-        //    model.Write(rhinoPath, 6);
+            model.Write(rhinoPath, 6);
 
-        //    doc.AppendFile(rhinoPath);
+            doc.AppendFile(rhinoPath);
 
-        //    return $"File saved {rhinoPath}";
-        //}
+            return $"File saved {rhinoPath}";
+        }
     }
     
 }
