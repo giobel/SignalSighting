@@ -10,6 +10,8 @@ using Autodesk.Navisworks.Api.DocumentParts;
 using System.Linq;
 using Autodesk.Navisworks.Api.Interop;
 using Autodesk.Navisworks.Internal.ApiImplementation;
+using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace NavisCustomRibbon
 {
@@ -25,16 +27,20 @@ namespace NavisCustomRibbon
         private List<Point3d> DriverPts { get; set; } //points on alignmnet at driver height
         private List<string> SphereNames { get; set; }
         private string signalMark { get; set; }
-        
+        private double scaleFactor { get; set; }
 
         public string GetSignal()
         {
-            double scaleFactor = LcOaUnit.ScaleFactor(Units.Meters, Autodesk.Navisworks.Api.Application.ActiveDocument.Units);
+            Debug.WriteLine("********Get signal");
+
+            scaleFactor = LcOaUnit.ScaleFactor(Units.Meters, Autodesk.Navisworks.Api.Application.ActiveDocument.Units);
+
+            Debug.WriteLine($"scale factor {scaleFactor}");
 
             if (scaleFactor != 1)
             {
-                MessageBox.Show("Model units must be in metres.\nPlease import the alignment file first or change the .ifc file import settings");
-                return "Error: model units not in metres";
+                //MessageBox.Show("Model units must be in metres.\nPlease import the alignment file first or change the .ifc file import settings");
+                //return "Error: model units not in metres";
             }
 
             doc = Autodesk.Navisworks.Api.Application.ActiveDocument;
@@ -59,7 +65,14 @@ namespace NavisCustomRibbon
                 }
             }*/
 
+
+
             signalBB3dcenter = storedSelection.ExplicitSelection[0].BoundingBox().Center;
+
+            Debug.WriteLine("Signal Bbox center:");
+            Debug.WriteLine(PrintPoint(signalBB3dcenter));
+
+
             PropertyCategoryCollection signalProperties = storedSelection.ExplicitSelection[0].PropertyCategories;
 
             foreach (var property in signalProperties)
@@ -80,13 +93,26 @@ namespace NavisCustomRibbon
 
             return $"Signal {signalMark} selected\n" +
                 $"Centre: " +
-                $"{Math.Round(signalBB3dcenter.X,3)}," +
-                $"{Math.Round(signalBB3dcenter.Y,3)}," +
-                $"{Math.Round(signalBB3dcenter.Z,3)}";
+                String.Format("{0:0.##},", signalBB3dcenter.X) +
+                String.Format("{0:0.##},", signalBB3dcenter.Y) +
+                String.Format("{0:0.##}", signalBB3dcenter.Z);
         }
+
+        private string PrintPoint(Point3d rhinoPt)
+        {
+            return String.Format("{0:0.##},", rhinoPt.X) + String.Format("{0:0.##},", rhinoPt.Y)+ String.Format("{0:0.##},", rhinoPt.Z);
+        }
+
+        private string PrintPoint(Point3D navisPt)
+        {
+            return String.Format("{0:0.##},", navisPt.X) + String.Format("{0:0.##},", navisPt.Y) + String.Format("{0:0.##},", navisPt.Z);
+        }
+
 
         public string GetTrack()
         {
+            Debug.WriteLine("*****Get Track");
+
             ModelItemCollection oModelColl = Autodesk.Navisworks.Api.Application.ActiveDocument.CurrentSelection.SelectedItems;
             //convert to COM selection
 
@@ -120,12 +146,21 @@ namespace NavisCustomRibbon
 
             alignmentPoints.Sort();
 
+            Debug.WriteLine("Alignment points");
+
+            foreach (Point3d item in alignmentPoints)
+            {
+                Debug.WriteLine(PrintPoint(item));
+            }
 
             return $"{alignmentPoints.Count} points";
         }
 
+
+
         public string Run(double speed, double interval, double driverHeight, bool isUpDirection, bool createRhinoModel)
         {
+            Debug.WriteLine("*****RUN");
             //signal centroid should be in m. Disable "Revit IFC" from file options
             try
             {
@@ -137,15 +172,29 @@ namespace NavisCustomRibbon
 
                 //closest point method needs a polyline. degree is 1 so crv an pl match
                 Polyline pl = new Polyline(alignmentPoints);
-
+                
+                Debug.WriteLine("Polyline Start and End:");
+                Debug.WriteLine(PrintPoint(pl[0]));
+                Debug.WriteLine(PrintPoint(pl[pl.Count-1]));
+                Debug.WriteLine("Polyline length");
+                Debug.WriteLine(pl.Length);
 
                 //signal centroid in Rhino Coordinates
                 signalCentroid = new Point3d(signalBB3dcenter.X, signalBB3dcenter.Y, signalBB3dcenter.Z);
 
+                Debug.WriteLine("Signal Centroid in Rhino coordinates:");
+                Debug.WriteLine(PrintPoint(signalCentroid));
+
                 //point on alignment            
                 closestPt = pl.ClosestPoint(signalCentroid);
 
+                Debug.WriteLine("Closest Point:");
+                Debug.WriteLine(PrintPoint(closestPt));
+
                 double t = pl.ClosestParameter(closestPt);
+
+                Debug.WriteLine("Split parameter on curve:");
+                Debug.WriteLine(t.ToString());
 
                 plcurve = pl.ToPolylineCurve().Split(t);
 
@@ -162,7 +211,13 @@ namespace NavisCustomRibbon
                     viewpointsPl.Reverse();
                 }
 
-                double totalLength = speed * 1000 * interval / 3600; //222m at 80km/h
+                Debug.WriteLine("Split Viewpoints polyline start and end points:");
+                Debug.WriteLine(PrintPoint(viewpointsPl[0]));
+                Debug.WriteLine(PrintPoint(viewpointsPl[viewpointsPl.Count-1]));
+                Debug.WriteLine("Polyline length");
+                Debug.WriteLine(viewpointsPl.Length);
+
+                double totalLength = speed * 1000 * interval * scaleFactor / 3600; //222m at 80km/h
 
                 List<double> distances = new List<double>();
 
@@ -174,7 +229,7 @@ namespace NavisCustomRibbon
                     distances.Add(currentDistance);
                 }
 
-                Point3d previousViewpoint = closestPt + new Point3d(0, 0, driverHeight);
+                Point3d previousViewpoint = closestPt + new Point3d(0, 0, driverHeight * scaleFactor);
 
 
                 List<Viewpoint> allViewpoints = new List<Viewpoint>();
@@ -184,10 +239,24 @@ namespace NavisCustomRibbon
 
                 for (int i = 0; i < distances.Count; i++)
                 {
+                    Debug.WriteLine(i);
+                    Debug.WriteLine(distances[i]);
+
                     double p = Utils.PolylineEvaluateLength(viewpointsPl, distances[i]);
+                    Debug.WriteLine("Parameter on polyline");
+                    Debug.WriteLine(p);
+
 
                     Point3d vp = viewpointsPl.PointAt(p);
-                    Point3d driverPoint = vp + new Point3d(0, 0, 2.7);
+
+                    Debug.WriteLine("ViewPoint on Polyline");
+                    Debug.WriteLine(PrintPoint(vp));
+
+                    Point3d driverPoint = vp + new Point3d(0, 0, driverHeight * scaleFactor);
+
+                    Debug.WriteLine("Driverpoint on Polyline");
+                    Debug.WriteLine(PrintPoint(driverPoint));
+
                     Line l = new Line(vp, driverPoint);
 
                     ViewpointsPts.Add(vp);
@@ -204,8 +273,10 @@ namespace NavisCustomRibbon
                     itemVp.AlignDirection(vector3D);
                     itemVp.WorldUpVector = new UnitVector3D(0, 0, 1);
                     itemVp.AlignUp(new UnitVector3D(0, 0, 1));
-                    itemVp.LinearSpeed = totalLength / interval; //22m/s
+                    itemVp.LinearSpeed = totalLength * scaleFactor / interval; //22m/s
 
+                    Debug.WriteLine("Viewpoints");
+                    Debug.WriteLine(PrintPoint(itemVp.Position));
 
                     allViewpoints.Add(itemVp);
 
@@ -237,12 +308,6 @@ namespace NavisCustomRibbon
                     }
                 }
 
-                
-
-                
-
-
-
                 for (int i = allViewpoints.Count; i > 0; i--)
                 {
                     double name = distances[i - 1];
@@ -255,9 +320,6 @@ namespace NavisCustomRibbon
                     oSavePts.Move(oSavePts.RootItem, oSavePts.Value.Count - 1, oFolder, oFolder.Children.Count);
                     
                 }
-
-
-                
 
                 if (createRhinoModel)
                 {
