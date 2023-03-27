@@ -28,10 +28,21 @@ namespace NavisCustomRibbon
 
         public string GetSignal()
         {
+
             doc = Autodesk.Navisworks.Api.Application.ActiveDocument;
             Selection storedSelection = new Selection();
             storedSelection = new Selection();
             storedSelection.CopyFrom(doc.CurrentSelection.ToSelection());
+
+                if (storedSelection.ExplicitSelection[0].Transform.Linear.ToString().Contains("0.001"))
+                {
+                    //model has been scaled so it's ok to procede
+                }
+                else
+                {
+                    MessageBox.Show("Model is in Millimiters. Please scale by 0.001");
+                }
+
 
             signalBB3dcenter = storedSelection.ExplicitSelection[0].BoundingBox().Center;
             PropertyCategoryCollection signalProperties = storedSelection.ExplicitSelection[0].PropertyCategories;
@@ -100,9 +111,15 @@ namespace NavisCustomRibbon
 
         public string Run(double speed, double interval, double driverHeight, bool isUpDirection, bool createRhinoModel)
         {
+            //signal centroid should be in m. Disable "Revit IFC" from file options
             try
             {
-                //MessageBox.Show(doc.Units.ToString());
+                if (alignmentPoints.Count < 1)
+                {
+                    MessageBox.Show("Please select a track alignment");
+                    return "Error track alignment not found";
+                }
+
 
                 //closest point method needs a polyline. degree is 1 so crv an pl match
                 Polyline pl = new Polyline(alignmentPoints);

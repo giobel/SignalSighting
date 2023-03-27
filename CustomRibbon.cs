@@ -65,7 +65,7 @@ namespace NavisCustomRibbon
 namespace NavisDockPanel
 {
     [Plugin("SignalSightDockPanel", "LOR", DisplayName = "SignalSightDockPanel")]
-    [DockPanePlugin(160,350,AutoScroll = true, MinimumWidth = 160, FixedSize = false)]
+    [DockPanePlugin(220,350,AutoScroll = true, MinimumWidth = 220, FixedSize = false)]
     public class SignalSightDockPanel : DockPanePlugin
     {
         public override Control CreateControlPane()

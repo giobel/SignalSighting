@@ -47,12 +47,17 @@ namespace NavisCustomRibbon
 
         private void ButtonRun_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
             double speed = double.Parse(tboxSpeed.Text);
             double interval = double.Parse(tbox_Interval.Text);
             double driverHeight = double.Parse(tbox_DriverH.Text);
 
-            ViewPointsModel.Run(speed, interval, driverHeight, cboxUpDirection.IsChecked.Value, cboxRhinoOutput.IsChecked.Value);
-            CleanRunLabel();
+            labelGenerateVpoints.Text = ViewPointsModel.Run(speed, interval, driverHeight, cboxUpDirection.IsChecked.Value, cboxRhinoOutput.IsChecked.Value);
+            }
+            catch{
+                labelGenerateVpoints.Text = "Something went wrong";
+            }
         }
 
 
