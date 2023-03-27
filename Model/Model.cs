@@ -25,15 +25,30 @@ namespace NavisCustomRibbon
         private List<Point3d> DriverPts { get; set; } //points on alignmnet at driver height
         private List<string> SphereNames { get; set; }
         private string signalMark { get; set; }
+        
 
         public string GetSignal()
         {
+            double scaleFactor = LcOaUnit.ScaleFactor(Units.Meters, Autodesk.Navisworks.Api.Application.ActiveDocument.Units);
+
+            if (scaleFactor != 1)
+            {
+                MessageBox.Show("Model units must be in metres.\nPlease import the alignment file first or change the .ifc file import settings");
+                return "Error: model units not in metres";
+            }
 
             doc = Autodesk.Navisworks.Api.Application.ActiveDocument;
             Selection storedSelection = new Selection();
             storedSelection = new Selection();
             storedSelection.CopyFrom(doc.CurrentSelection.ToSelection());
 
+            /*
+            if (doc.Units.ToString() == "Feet")
+            {
+                MessageBox.Show($"Model units are {doc.Units.ToString()}. Please change them to metres");
+            }
+            else
+            {
                 if (storedSelection.ExplicitSelection[0].Transform.Linear.ToString().Contains("0.001"))
                 {
                     //model has been scaled so it's ok to procede
@@ -42,7 +57,7 @@ namespace NavisCustomRibbon
                 {
                     MessageBox.Show("Model is in Millimiters. Please scale by 0.001");
                 }
-
+            }*/
 
             signalBB3dcenter = storedSelection.ExplicitSelection[0].BoundingBox().Center;
             PropertyCategoryCollection signalProperties = storedSelection.ExplicitSelection[0].PropertyCategories;
@@ -120,9 +135,9 @@ namespace NavisCustomRibbon
                     return "Error track alignment not found";
                 }
 
-
                 //closest point method needs a polyline. degree is 1 so crv an pl match
                 Polyline pl = new Polyline(alignmentPoints);
+
 
                 //signal centroid in Rhino Coordinates
                 signalCentroid = new Point3d(signalBB3dcenter.X, signalBB3dcenter.Y, signalBB3dcenter.Z);

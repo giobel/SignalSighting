@@ -8,7 +8,7 @@ namespace NavisCustomRibbon
     class CallbackGeomListener : ComApi.InwSimplePrimitivesCB
     {
         public ComApi.InwLTransform3f3 LCS2WCS;
-        public List<string> coords = new List<string>();
+        //public List<string> coords = new List<string>();
         public List<Point3d> rhinoPts = new List<Point3d>();
         public double[] Elements;
 
@@ -43,8 +43,8 @@ namespace NavisCustomRibbon
 
             rhinoPts.Add(new Point3d(newPoint2X, newPoint2Y, newPoint2Z));
 
-            coords.Add($"{newPointX},{newPointY},{newPointZ}");
-            coords.Add($"{newPoint2X},{newPoint2Y},{newPoint2Z}");
+            //coords.Add($"{newPointX},{newPointY},{newPointZ}");
+            //coords.Add($"{newPoint2X},{newPoint2Y},{newPoint2Z}");
 
         }
 

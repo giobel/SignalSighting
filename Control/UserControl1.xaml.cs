@@ -37,6 +37,7 @@ namespace NavisCustomRibbon
         {
             try
             {
+                this.labelTrack.Text = "";
                 this.labelTrack.Text = ViewPointsModel.GetTrack();
             }
             catch (Exception ex)
