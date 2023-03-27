@@ -20,9 +20,6 @@ namespace NavisCustomRibbon
             ViewPointsModel = new Model();
         }
 
-
-
-
         private void BtnGetSignal_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             try

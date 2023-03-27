@@ -8,6 +8,8 @@ using System.Windows;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Autodesk.Navisworks.Api.DocumentParts;
 using System.Linq;
+using Autodesk.Navisworks.Api.Interop;
+using Autodesk.Navisworks.Internal.ApiImplementation;
 
 namespace NavisCustomRibbon
 {
@@ -100,6 +102,8 @@ namespace NavisCustomRibbon
         {
             try
             {
+                //MessageBox.Show(doc.Units.ToString());
+
                 //closest point method needs a polyline. degree is 1 so crv an pl match
                 Polyline pl = new Polyline(alignmentPoints);
 
@@ -182,19 +186,17 @@ namespace NavisCustomRibbon
                 }
 
                 FolderItem fi = new FolderItem();
-                
                 fi.DisplayName = signalMark;
-                
-                
                 doc.SavedViewpoints.AddCopy(fi);
-
-
+               
                 DocumentSavedViewpoints oSavePts = doc.SavedViewpoints;
 
                 GroupItem oFolder = null;
 
+
                 foreach (SavedItem oEachItem in oSavePts.Value)
                 {
+                    
                     if (oEachItem.DisplayName == signalMark)
                     {
                         oFolder = oEachItem as GroupItem;
@@ -202,6 +204,10 @@ namespace NavisCustomRibbon
                         break;
                     }
                 }
+
+                
+
+                
 
 
 
@@ -215,7 +221,7 @@ namespace NavisCustomRibbon
                     doc.SavedViewpoints.AddCopy(savedViewpoint);
 
                     oSavePts.Move(oSavePts.RootItem, oSavePts.Value.Count - 1, oFolder, oFolder.Children.Count);
-
+                    
                 }
 
 
@@ -277,7 +283,7 @@ namespace NavisCustomRibbon
                 model.Objects.AddSphere(new Sphere(ViewpointsPts[i], 0.5), sphereAttr);
             }
 
-            string rhinoPath = (@"C:\temp\navisRhino2.3dm");
+            string rhinoPath = (@"C:\temp\NavisRhinoTemp.3dm");
 
             model.Write(rhinoPath, 6);
 

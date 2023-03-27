@@ -17,7 +17,7 @@
                 <TextBox x:Name="tbox_Interval"  Text="10" Width="50" TextAlignment="Center" BorderBrush="{x:Null}" TextChanged="tbox_Interval_TextChanged" Background="#C0DBF4" TabIndex="2"/>
                 <TextBox x:Name="label_Interval"  Text="Interval [s]" Width="110" BorderBrush="{x:Null}" IsTabStop="False" Background="{x:Null}" IsHitTestVisible="False" Focusable="False" AllowDrop="False" />
             </StackPanel>
-            
+
             <TextBox x:Name="tbox_TotalLength"  BorderBrush="{x:Null}" Background="Transparent" Margin="10,5,0,5" Width="130" IsTabStop="False" IsHitTestVisible="False" Focusable="False" AllowDrop="False" HorizontalAlignment="Left">Total distance: 222.22m</TextBox>
 
             <StackPanel Orientation="Horizontal" Margin="10,5,10,0">
@@ -31,11 +31,11 @@
                 <CheckBox x:Name="cboxRhinoOutput" Content="Create Rhino model" HorizontalAlignment="Left" Margin="0,5,0,0" Width="156" IsChecked="True" Click="cboxRhinoOutputClick" TabIndex="-6"/>
             </StackPanel>
 
-            <Button Content="Get Signal" VerticalAlignment="Top" Click="BtnGetSignal_Click" Margin="10,10,10,0" Height="25" HorizontalAlignment="Stretch" TabIndex="6" />
-            <TextBlock x:Name="labelSignal" Height="25" Text="Nothing selected" Margin="10,5,10,0" TextWrapping="WrapWithOverflow"/>
+            <Button Content="Get Signal" Click="BtnGetSignal_Click" Margin="10,10,10,0" Height="25" HorizontalAlignment="Stretch" TabIndex="6" />
+            <TextBlock x:Name="labelSignal" Height="25" Text="Nothing selected" Margin="10,5,10,0" TextWrapping="Wrap" FontSize="10"/>
 
-            <Button HorizontalAlignment="Stretch"  Content="Get Alignment" Margin="10,10,10,0" VerticalAlignment="Top" Click="BtnGetAlignment_Click" Height="25" TabIndex="7"/>
-            <TextBlock x:Name="labelTrack" Height="25" Text="Nothing selected" Margin="10,5,10,0"/>
+            <Button HorizontalAlignment="Stretch"  Content="Get Alignment" Margin="10,10,10,0" Click="BtnGetAlignment_Click" Height="25" TabIndex="7"/>
+            <TextBlock x:Name="labelTrack" Height="25" Text="Nothing selected" Margin="10,5,10,0" FontSize="10"/>
 
             <Button x:Name="BtnRun" Height="25" Content="Generate Viewpoints" Margin="10,10,10,0" Click="ButtonRun_Click" HorizontalAlignment="Stretch" TabIndex="8"/>
             <TextBlock x:Name="labelGenerateVpoints" Height="25" Text="" Margin="10,5,10,0"/>
