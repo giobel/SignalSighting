@@ -25,6 +25,7 @@ namespace NavisCustomRibbon
             try
             {
                 this.labelSignal.Text = ViewPointsModel.GetSignal();
+                this.btnAlignment.IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -39,6 +40,7 @@ namespace NavisCustomRibbon
             {
                 this.labelTrack.Text = "";
                 this.labelTrack.Text = ViewPointsModel.GetTrack();
+                this.BtnRun.IsEnabled = true;
             }
             catch (Exception ex)
             {

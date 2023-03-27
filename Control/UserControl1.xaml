@@ -34,10 +34,10 @@
             <Button Content="Get Signal" Click="BtnGetSignal_Click" Margin="10,10,10,0" Height="25" HorizontalAlignment="Stretch" TabIndex="6" />
             <TextBlock x:Name="labelSignal" Height="25" Text="Nothing selected" Margin="10,5,10,0" TextWrapping="Wrap" FontSize="10"/>
 
-            <Button HorizontalAlignment="Stretch"  Content="Get Alignment" Margin="10,10,10,0" Click="BtnGetAlignment_Click" Height="25" TabIndex="7"/>
+            <Button x:Name="btnAlignment" HorizontalAlignment="Stretch"  Content="Get Alignment" Margin="10,10,10,0" Click="BtnGetAlignment_Click" Height="25" TabIndex="7" IsEnabled="False"/>
             <TextBlock x:Name="labelTrack" Height="25" Text="Nothing selected" Margin="10,5,10,0" FontSize="10"/>
 
-            <Button x:Name="BtnRun" Height="25" Content="Generate Viewpoints" Margin="10,10,10,0" Click="ButtonRun_Click" HorizontalAlignment="Stretch" TabIndex="8"/>
+            <Button x:Name="BtnRun" Height="25" Content="Generate Viewpoints" Margin="10,10,10,0" Click="ButtonRun_Click" HorizontalAlignment="Stretch" TabIndex="8" IsEnabled="False"/>
             <TextBlock x:Name="labelGenerateVpoints" Height="25" Text="" Margin="10,5,10,0"/>
         </StackPanel>
     </Grid>

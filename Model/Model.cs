@@ -261,7 +261,7 @@ namespace NavisCustomRibbon
 
                     ViewpointsPts.Add(vp);
                     DriverPts.Add(driverPoint);
-                    SphereNames.Add(distances[i].ToString());
+                    SphereNames.Add((distances[i]/scaleFactor).ToString());
 
                     Viewpoint itemVp = new Viewpoint();
 
@@ -273,7 +273,7 @@ namespace NavisCustomRibbon
                     itemVp.AlignDirection(vector3D);
                     itemVp.WorldUpVector = new UnitVector3D(0, 0, 1);
                     itemVp.AlignUp(new UnitVector3D(0, 0, 1));
-                    itemVp.LinearSpeed = totalLength * scaleFactor / interval; //22m/s
+                    itemVp.LinearSpeed = speed; //22m/s
 
                     Debug.WriteLine("Viewpoints");
                     Debug.WriteLine(PrintPoint(itemVp.Position));
@@ -310,7 +310,7 @@ namespace NavisCustomRibbon
 
                 for (int i = allViewpoints.Count; i > 0; i--)
                 {
-                    double name = distances[i - 1];
+                    double name = distances[i - 1]/scaleFactor;
                     
                     SavedViewpoint savedViewpoint = new SavedViewpoint(allViewpoints[i - 1]);
                     string simplifiedName = String.Format("{0:0.##}", name);
@@ -335,9 +335,15 @@ namespace NavisCustomRibbon
             return "Completed";
         }
 
+        private Point3d ScalePoint(Point3d pt, double scale)
+        {
+            return new Point3d(pt.X/scale, pt.Y/scale, pt.Z/scale);
+        }
+ 
         public string CreateRhinoModel()
         {
-            Rhino.Geometry.Line line = new Rhino.Geometry.Line(signalCentroid, closestPt);
+
+            Rhino.Geometry.Line line = new Rhino.Geometry.Line(ScalePoint(signalCentroid, scaleFactor), ScalePoint(closestPt, scaleFactor));
 
             var model = new Rhino.FileIO.File3dm();
 
@@ -365,7 +371,7 @@ namespace NavisCustomRibbon
 
             for (int i = 0; i < ViewpointsPts.Count; i++)
             {
-                model.Objects.AddLine(ViewpointsPts[i], DriverPts[i]);
+                model.Objects.AddLine(ScalePoint(ViewpointsPts[i],scaleFactor), ScalePoint(DriverPts[i], scaleFactor));
 
                 Rhino.DocObjects.ObjectAttributes sphereAttr = new Rhino.DocObjects.ObjectAttributes()
                 {
@@ -374,7 +380,7 @@ namespace NavisCustomRibbon
                     ObjectColor = System.Drawing.Color.Coral
                 };
 
-                model.Objects.AddSphere(new Sphere(ViewpointsPts[i], 0.5), sphereAttr);
+                model.Objects.AddSphere(new Sphere(ScalePoint(ViewpointsPts[i], scaleFactor), 0.25), sphereAttr);
             }
 
             string rhinoPath = (@"C:\temp\NavisRhinoTemp.3dm");
